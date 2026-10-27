@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +24,7 @@ import com.example.pulsemusic.core.ui.components.FilterChipRow
 import com.example.pulsemusic.core.ui.components.BaseItemRow
 import com.example.pulsemusic.core.ui.components.MenuItemAction
 import com.example.pulsemusic.core.ui.theme.YtDarkBackground
+import com.example.pulsemusic.feature.library.ui.components.EmptyStateText
 import kotlinx.coroutines.launch
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -236,44 +238,58 @@ fun ExploreScreen(
                 state = listState,
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(uiState.songs, key = { it.id }) { song ->
-                    val authorText = if (!song.originalAuthor.isNullOrBlank()) {
-                        "${song.authorLogin} (Ориг: ${song.originalAuthor})"
-                    } else {
-                        song.authorLogin
-                    }
-
-                    val menuItems = remember(song.id) {
-                        listOf(
-                            MenuItemAction(
-                                text = "Відтворити наступним",
-                                onClick = { playerViewModel.playNextInQueue(song.id, PlayerSource.EXTERNAL) }
-                            ),
-                            MenuItemAction(
-                                text = "Додати до черги",
-                                onClick = { playerViewModel.addToQueueEnd(song.id, PlayerSource.EXTERNAL) }
-                            )
+                if (uiState.songs.isEmpty() && !uiState.isLoading) {
+                    item {
+                        val message = when {
+                            uiState.error != null -> "Немає підключення до інтернету або сталася помилка"
+                            uiState.searchQuery != null -> "Нічого не знайдено за запитом «${uiState.searchQuery}»"
+                            else -> "Нічого не знайдено"
+                        }
+                        EmptyStateText(
+                            text = message,
+                            icon = if (uiState.error != null) Icons.Default.Info else null
                         )
                     }
-
-                    BaseItemRow(
-                        title = song.title,
-                        subtitle = authorText,
-                        coverUrl = song.cover ?: "",
-                        onClick = {
-                            // Відтворення пісні
-                            val startIndex = uiState.songs.indexOf(song)
-                            playerViewModel.setQueue(
-                                songIds = uiState.songs.map { it.id },
-                                startIndex = if (startIndex >= 0) startIndex else 0,
-                                source = PlayerSource.EXTERNAL
-                            )
-                        },
-                        menuItems = menuItems,
-                        onSubtitleClick = {
-                            exploreViewModel.onAuthorFilterChanged(song.authorId, song.authorLogin)
+                } else {
+                    items(uiState.songs, key = { it.id }) { song ->
+                        val authorText = if (!song.originalAuthor.isNullOrBlank()) {
+                            "${song.authorLogin} (Ориг: ${song.originalAuthor})"
+                        } else {
+                            song.authorLogin
                         }
-                    )
+
+                        val menuItems = remember(song.id) {
+                            listOf(
+                                MenuItemAction(
+                                    text = "Відтворити наступним",
+                                    onClick = { playerViewModel.playNextInQueue(song.id, PlayerSource.EXTERNAL) }
+                                ),
+                                MenuItemAction(
+                                    text = "Додати до черги",
+                                    onClick = { playerViewModel.addToQueueEnd(song.id, PlayerSource.EXTERNAL) }
+                                )
+                            )
+                        }
+
+                        BaseItemRow(
+                            title = song.title,
+                            subtitle = authorText,
+                            coverUrl = song.cover ?: "",
+                            onClick = {
+                                // Відтворення пісні
+                                val startIndex = uiState.songs.indexOf(song)
+                                playerViewModel.setQueue(
+                                    songIds = uiState.songs.map { it.id },
+                                    startIndex = if (startIndex >= 0) startIndex else 0,
+                                    source = PlayerSource.EXTERNAL
+                                )
+                            },
+                            menuItems = menuItems,
+                            onSubtitleClick = {
+                                exploreViewModel.onAuthorFilterChanged(song.authorId, song.authorLogin)
+                            }
+                        )
+                    }
                 }
 
                 // Індикатор завантаження внизу списку під час підвантаження даних

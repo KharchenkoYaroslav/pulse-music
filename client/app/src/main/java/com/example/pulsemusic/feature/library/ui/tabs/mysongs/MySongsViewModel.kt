@@ -27,7 +27,8 @@ import javax.inject.Inject
 data class MySongsUiState(
     val songs: List<SongRankingItem> = emptyList(),
     val categories: List<CategoryListResponse> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isError: Boolean = false
 )
 
 // Модель представлення моїх пісень
@@ -74,7 +75,7 @@ class MySongsViewModel @Inject constructor(
 
             hasMore = items.size >= pageSize
             offset = pageSize
-            _uiState.update { it.copy(songs = items, isLoading = false) }
+            _uiState.update { it.copy(songs = items, isLoading = false, isError = !result.isSuccess) }
         }
     }
 

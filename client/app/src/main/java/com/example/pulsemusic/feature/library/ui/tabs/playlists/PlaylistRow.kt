@@ -58,7 +58,7 @@ fun PlaylistRow(
                 .fillMaxWidth()
                 .clickable {
                     expanded = !expanded
-                    if (expanded && songs == null) {
+                    if (expanded) {
                         onExpand()
                     }
                 }

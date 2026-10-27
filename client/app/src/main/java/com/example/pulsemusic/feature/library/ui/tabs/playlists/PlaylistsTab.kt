@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,7 +24,7 @@ import com.example.pulsemusic.feature.library.ui.components.EmptyStateText
 import com.example.pulsemusic.feature.player.data.model.PlayerSource
 import com.example.pulsemusic.feature.player.ui.PlayerViewModel
 
-// Вкладка плейлістів
+// Вкладка плейлистів
 @Composable
 fun PlaylistsTabContent(
     viewModel: PlaylistsViewModel,
@@ -44,7 +45,16 @@ fun PlaylistsTabContent(
 
     LazyColumn(modifier = Modifier.fillMaxSize()) {
         if (playlists.isEmpty() && !uiState.isLoading) {
-            item { EmptyStateText(if (searchQuery.isNotEmpty()) "Нічого не знайдено" else "У вас немає плейлистів") }
+            item {
+                EmptyStateText(
+                    text = when {
+                        uiState.isError -> "Немає підключення до інтернету або сталася помилка"
+                        searchQuery.isNotEmpty() -> "Нічого не знайдено"
+                        else -> "У вас немає плейлистів"
+                    },
+                    icon = if (uiState.isError) Icons.Default.Info else null
+                )
+            }
         } else {
             itemsIndexed(items = playlists, key = { _, item -> item.id }) { _, item ->
                 PlaylistRow(

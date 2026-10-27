@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import dagger.hilt.android.AndroidEntryPoint
 import com.example.pulsemusic.core.ui.MainAppScaffold
-import com.example.pulsemusic.core.ui.theme.MobileCourseworkTheme
+import com.example.pulsemusic.core.ui.theme.PulseMusicTheme
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MobileCourseworkTheme {
+            PulseMusicTheme {
                 MainAppScaffold()
             }
         }

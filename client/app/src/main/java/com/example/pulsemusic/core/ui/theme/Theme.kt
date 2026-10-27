@@ -18,7 +18,7 @@ private val YtMusicColorScheme = darkColorScheme(
 )
 
 @Composable
-fun MobileCourseworkTheme(
+fun PulseMusicTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(

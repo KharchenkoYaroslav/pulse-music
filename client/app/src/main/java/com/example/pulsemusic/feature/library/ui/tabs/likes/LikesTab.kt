@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.example.pulsemusic.feature.library.ui.components.EmptyStateText
@@ -38,7 +40,16 @@ fun LikesTabContent(
 
     LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
         if (uiState.likes.isEmpty() && !uiState.isLoading) {
-            item { EmptyStateText(if (searchQuery.isNotEmpty()) "Нічого не знайдено" else "Немає вподобаних пісень") }
+            item {
+                EmptyStateText(
+                    text = when {
+                        uiState.isError -> "Немає підключення до інтернету або сталася помилка"
+                        searchQuery.isNotEmpty() -> "Нічого не знайдено"
+                        else -> "Немає вподобаних пісень"
+                    },
+                    icon = if (uiState.isError) Icons.Default.Info else null
+                )
+            }
         } else {
             itemsIndexed(
                 items = uiState.likes,

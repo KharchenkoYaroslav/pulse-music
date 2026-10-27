@@ -17,7 +17,8 @@ import javax.inject.Inject
 
 data class LikesUiState(
     val likes: List<SongRankingItem> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isError: Boolean = false
 )
 
 // Модель представлення вподобань
@@ -52,7 +53,7 @@ class LikesViewModel @Inject constructor(
             val items = result.getOrDefault(emptyList())
             hasMore = items.size >= pageSize
             offset = pageSize
-            _uiState.update { it.copy(likes = items, isLoading = false) }
+            _uiState.update { it.copy(likes = items, isLoading = false, isError = !result.isSuccess) }
         }
     }
 

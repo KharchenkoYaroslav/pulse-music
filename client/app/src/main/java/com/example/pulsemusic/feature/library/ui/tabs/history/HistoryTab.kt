@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -46,7 +48,16 @@ fun HistoryTabContent(
 
     LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
         if (uiState.history.isEmpty() && !uiState.isLoading) {
-            item { EmptyStateText(if (searchQuery.isNotEmpty()) "Нічого не знайдено" else "Історія порожня") }
+            item {
+                EmptyStateText(
+                    text = when {
+                        uiState.isError -> "Немає підключення до інтернету або сталася помилка"
+                        searchQuery.isNotEmpty() -> "Нічого не знайдено"
+                        else -> "Історія порожня"
+                    },
+                    icon = if (uiState.isError) Icons.Default.Info else null
+                )
+            }
         } else {
             uiState.groupedHistory.forEach { (category, categoryItems) ->
                 item(key = category) {

@@ -17,7 +17,8 @@ import javax.inject.Inject
 
 data class HistoryUiState(
     val history: List<SongHistoryItem> = emptyList(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isError: Boolean = false
 ) {
     val groupedHistory: Map<String, List<SongHistoryItem>>
         get() = groupItemsByTimeCategory(history) { it.viewedAt }
@@ -50,7 +51,7 @@ class HistoryViewModel @Inject constructor(
             val items = result.getOrDefault(emptyList())
             hasMore = items.size >= pageSize
             offset = pageSize
-            _uiState.update { it.copy(history = items, isLoading = false) }
+            _uiState.update { it.copy(history = items, isLoading = false, isError = !result.isSuccess) }
         }
     }
 

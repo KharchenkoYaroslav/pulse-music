@@ -19,7 +19,8 @@ data class PlaylistsUiState(
     val playlists: List<UserPlaylist> = emptyList(),
     val playlistDetails: Map<String, List<SongRankingItem>> = emptyMap(),
     val loadingPlaylists: Set<String> = emptySet(),
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isError: Boolean = false
 ) {
     fun filteredPlaylists(query: String): List<UserPlaylist> {
         val q = query.trim().lowercase()
@@ -34,7 +35,7 @@ data class PlaylistsUiState(
     }
 }
 
-// Модель представлення плейлістів
+// Модель представлення плейлистів
 @HiltViewModel
 class PlaylistsViewModel @Inject constructor(
     private val repository: LibraryRepository,
@@ -53,7 +54,23 @@ class PlaylistsViewModel @Inject constructor(
         loadJob = viewModelScope.launch {
             val query = searchQuery.trim().takeIf { it.isNotEmpty() }
             val result = repository.getUserPlaylistsDirectly(search = query)
-            _uiState.update { it.copy(playlists = result.getOrDefault(emptyList()), isLoading = false) }
+            val isSuccess = result.isSuccess
+            val newPlaylists = result.getOrDefault(emptyList())
+
+            val currentDetailsKeys = _uiState.value.playlistDetails.keys.intersect(newPlaylists.map { it.id }.toSet())
+            val updatedDetails = _uiState.value.playlistDetails.filterKeys { currentDetailsKeys.contains(it) }
+
+            _uiState.update { it.copy(playlists = newPlaylists, playlistDetails = updatedDetails, isLoading = false, isError = !isSuccess) }
+
+            for (playlistId in currentDetailsKeys) {
+                val detailsResult = repository.getPlaylistDetailsDirectly(playlistId)
+                if (detailsResult.isSuccess) {
+                    val songs = detailsResult.getOrDefault(emptyList())
+                    _uiState.update { state ->
+                        state.copy(playlistDetails = state.playlistDetails + (playlistId to songs))
+                    }
+                }
+            }
         }
     }
 
