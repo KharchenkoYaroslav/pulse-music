@@ -1,0 +1,58 @@
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Request, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody, ApiOkResponse, ApiNoContentResponse } from '@nestjs/swagger';
+import { AuthGuard, RefreshTokenGuard, AuthService } from '@simple-music/auth';
+import { AuthCredentialsDto } from './dto/auth/auth-credentials.dto';
+import { RefreshRequestDto } from "./dto/auth/refresh-request.dto";
+import { AuthRequestDto } from "./dto/auth/auth-request.dto";
+import { AuthResponseDto } from './dto/auth/auth-response.dto';
+
+@ApiTags('Auth')
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @ApiOperation({ summary: 'Реєстрація нового користувача' })
+  @ApiOkResponse({ type: AuthResponseDto, description: 'Успішна реєстрація' })
+  @Post('register')
+  @HttpCode(HttpStatus.CREATED)
+  async register(@Body() credentialsDto: AuthCredentialsDto): Promise<AuthResponseDto> {
+    return this.authService.register(credentialsDto.login, credentialsDto.password);
+  }
+
+  @ApiOperation({ summary: 'Авторизація користувача' })
+  @ApiOkResponse({ type: AuthResponseDto, description: 'Успішна авторизація' })
+  @Post('login')
+  @HttpCode(HttpStatus.OK)
+  async login(@Body() credentialsDto: AuthCredentialsDto): Promise<AuthResponseDto> {
+    return this.authService.login(credentialsDto.login, credentialsDto.password);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Вихід з системи' })
+  @ApiNoContentResponse({ description: 'Успішний вихід' })
+  @ApiBody({ schema: { type: 'object', properties: { refreshToken: { type: 'string' } } } })
+  @UseGuards(AuthGuard)
+  @Post('logout')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async logout(
+    @Request() req: AuthRequestDto,
+    @Body('refreshToken') refreshToken: string
+  ): Promise<void> {
+    if (!refreshToken) {
+      throw new BadRequestException('Не передано refreshToken для виходу');
+    }
+    await this.authService.logout(req.user.sub, refreshToken);
+  }
+
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Оновлення токенів доступу' })
+  @ApiOkResponse({ type: AuthResponseDto, description: 'Токени успішно оновлено' })
+  @UseGuards(RefreshTokenGuard)
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  async refreshTokens(@Request() req: RefreshRequestDto): Promise<AuthResponseDto> {
+    const userId = req.user.sub;
+    const refreshToken = req.user.refreshToken;
+    return this.authService.refreshTokens(userId, refreshToken);
+  }
+}
