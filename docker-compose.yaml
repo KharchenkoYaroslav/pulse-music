@@ -1,8 +1,8 @@
-name: simple-music
+name: pulse-music
 services:
   minio:
     image: minio/minio:latest
-    container_name: simple_minio
+    container_name: pulse_minio
     restart: always
     ports:
       - "${MINIO_PORT}:${MINIO_PORT}"
@@ -15,7 +15,7 @@ services:
       - minio-data:/data
   mongo:
     image: mongo:latest
-    container_name: simple_mongo
+    container_name: pulse_mongo
     restart: always
     ports:
       - "27017:27017"
@@ -26,7 +26,7 @@ services:
       - mongo-data:/data/db
   redis:
     image: redis:alpine
-    container_name: simple_redis
+    container_name: pulse_redis
     restart: always
     ports:
       - "6379:6379"
